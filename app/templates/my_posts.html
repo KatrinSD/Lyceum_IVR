@@ -1,0 +1,23 @@
+{% extends "bootstrap/base.html" %}\
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+My posts
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='signin.css')}}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+<h1> {{username}}'s  posts:</h1>
+
+	{% for post in posts %}
+		<p> {{ post.body }} </p>
+	{% endfor %}
+
+</div> <!-- /container -->
+{% endblock %}
