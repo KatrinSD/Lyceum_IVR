@@ -13,15 +13,14 @@ Post
 {% block content %}
 <div class="container">
 
-<h1> {{username}} </h1>
-<h2> {{user_id}} </h2>
+<h1> Post:</h1>
 
-	  <form class="form-post" method = "POST" action = "/writepost">
-        <h2 class="form-post-heading">Write a post</h2>
-        {{ form.hidden_tag() }}
-        {{ wtf.form_field(form.body) }}
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Create post</button>
-      </form>
+
+	<h3> {{ post.username }} </h3>
+	<h4> {{ post.header }} </h4>
+	<p> {{ post.body }} </p>
+	<p> {{ tags }} </p>
+	<h5> {{ post.number_of_likes }} </h5>
 
 
 </div> <!-- /container -->

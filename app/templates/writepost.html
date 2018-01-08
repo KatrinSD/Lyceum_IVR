@@ -1,0 +1,31 @@
+{% extends "bootstrap/base.html" %}\
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+Post
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='signin.css')}}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+<h1> {{username}} </h1>
+<h2> {{user_id}} </h2>
+
+	  <form class="form-post" method = "POST" action = "/writepost">
+        <h2 class="form-post-heading">Write a post</h2>
+        {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.header) }}
+        {{ wtf.form_field(form.body) }}
+        {{ wtf.form_field(form.tags) }}
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Create post</button>
+
+      </form>
+
+
+</div> <!-- /container -->
+{% endblock %}

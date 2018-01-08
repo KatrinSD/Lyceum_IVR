@@ -1,6 +1,6 @@
 from flask import render_template, session, redirect, url_for
 
-from app import app, db, login_manager
+from app import app, db, login_manager, tags_driver
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
@@ -20,9 +20,16 @@ def load_user(user_id):
 
 class Post(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
-	body = db.Column(db.String(100), unique=True)
+	header = db.Column(db.String(30))
+	body = db.Column(db.String(100))
 	username = db.Column(db.String(30))
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+	number_of_likes = db.Column(db.Integer, default=0)
+
+class Like(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+	post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
 class LoginForm(FlaskForm):
 	username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
@@ -35,9 +42,9 @@ class RegisterForm(FlaskForm):
 	password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
 
 class PostForm(FlaskForm):
+	header = StringField('header', validators=[InputRequired(), Length(min=1, max=30)])
 	body = StringField('post', validators=[InputRequired(), Length(min=1, max=1000)])
-
-
+	tags = StringField('tags', validators=[Length(min=1, max=100)])tags_driver.get_tags(post_id)
 
 
 @app.route('/')
@@ -104,17 +111,19 @@ def profile():
 
 @app.route('/writepost', methods=['GET', 'POST'])
 @login_required
-def post():
+def writepost():
 	form = PostForm()
 
 	if form.validate_on_submit():
-		post = Post(body=form.body.data, username=current_user.username, user_id=current_user.id)
+		post = Post(header=form.header.data, body=form.body.data, username=current_user.username, user_id=current_user.id)
 		db.session.add(post)
 		db.session.commit()
+		tags = form.tags.data.split()
+		tags_driver.set_tags(tags, post.id)
 
 		return '<h1>New post has been created!</h1>'
 
-	return render_template("post.html",form=form)
+	return render_template("writepost.html",form=form)
 
 @app.route('/myposts')
 @login_required
@@ -123,3 +132,34 @@ def my_posts():
 	posts = Post.query.filter_by(user_id=current_user.id)
 
 	return render_template("my_posts.html", username=current_user.username, posts=posts)
+
+@app.route('/allposts')
+@login_required
+def all_posts():
+
+	posts = Post.query
+
+	return render_template("all_posts.html", posts=posts)
+
+@app.route('/like/<int:post_id>')
+@login_required
+def like(post_id):
+
+	like = Like(post_id=post_id, user_id=current_user.id)
+	db.session.add(like)
+
+	post = Post.query.filter_by(id=post_id).first()
+	post.number_of_likes += 1
+	db.session.add(post)
+
+	db.session.commit()
+
+	return redirect(url_for('all_posts'))
+
+@app.route('/post/<int:post_id>')
+@login_required
+def post(post_id):
+	post = Post.query.filter_by(id=post_id).first()
+	tags = ", ".join(sorted(tags_driver.get_tags(post_id)))
+
+	return render_template("post.html", post=post, tags=tags)
