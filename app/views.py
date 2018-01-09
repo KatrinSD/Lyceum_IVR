@@ -44,7 +44,10 @@ class RegisterForm(FlaskForm):
 class PostForm(FlaskForm):
 	header = StringField('header', validators=[InputRequired(), Length(min=1, max=30)])
 	body = StringField('post', validators=[InputRequired(), Length(min=1, max=1000)])
-	tags = StringField('tags', validators=[Length(min=1, max=100)])tags_driver.get_tags(post_id)
+	tags = StringField('tags', validators=[Length(max=100)])
+
+class FindPostForm(FlaskForm):
+	tag = StringField('tag', validators=[Length(max=100)])
 
 
 @app.route('/')
@@ -163,3 +166,19 @@ def post(post_id):
 	tags = ", ".join(sorted(tags_driver.get_tags(post_id)))
 
 	return render_template("post.html", post=post, tags=tags)
+
+
+@app.route('/findposts', methods=["GET", "POST"])
+@login_required
+def findposts():
+
+	form = FindPostForm()
+	posts = []
+
+	if form.validate_on_submit():
+		tag = form.tag.data
+		post_ids = tags_driver.get_posts(tag)
+		posts = Post.query.filter(Post.id.in_(post_ids))
+
+	return render_template('findposts.html', form=form, posts=posts)
+

@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 class TagsDriver(object):
 
 	def __init__(self, db):
@@ -20,3 +22,7 @@ class TagsDriver(object):
 	def get_tags(self, post_id):
 		"""Returns tags by post_id."""
 		return self.db.smembers(self.change_post_id(post_id))
+
+	def get_posts(self, tag):
+		"""Returns post_id by tags."""
+		return self.db.smembers(self.change_tag(tag))
