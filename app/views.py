@@ -1,4 +1,4 @@
-from flask import render_template, session, redirect, url_for
+from flask import render_template, session, redirect, url_for, request
 
 from app import app, db, login_manager, tags_driver
 from flask_wtf import FlaskForm
@@ -140,6 +140,8 @@ def my_posts():
 @login_required
 def all_posts():
 
+
+
 	posts = Post.query
 
 	return render_template("all_posts.html", posts=posts)
@@ -182,3 +184,14 @@ def findposts():
 
 	return render_template('findposts.html', form=form, posts=posts)
 
+@app.route("/posts", methods=["GET", "POST"])
+def posts():
+
+	tag = request.form.get("tag")
+	if tag is None:
+		posts = Post.query
+	else:
+		post_ids = tags_driver.get_posts(tag)
+		posts = Post.query.filter(Post.id.in_(post_ids))
+
+	return render_template('posts.html', posts=posts)

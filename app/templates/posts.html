@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-All posts
+Posts
 {% endblock %}
 
 {% include "test.html" %}
@@ -9,7 +9,7 @@ All posts
 {% block content %}
 <div class="container">
 
-<h1> All posts:</h1>
+<h1> Posts:</h1>
 
 	{% for post in posts %}
 		<h3> {{ post.username }} </h3>
