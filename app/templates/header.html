@@ -3,18 +3,31 @@
   <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
-  <a class="navbar-brand" href="/signup">Sign up</a>
-  <a class="navbar-brand" href="/login">Log in</a>
+  {% if not is_auth %}
+    <a class="navbar-brand" href="/signup">Sign up</a>
+    <a class="navbar-brand" href="/login">Log in</a>
+  {% else %}
+    <a class="navbar-brand" href="/logout">Log out</a>
+  {% endif %}
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
         <a class="nav-link" href="/profile">Profile<span class="sr-only">(current)</span></a>
       </li>
+    </ul>
+    <ul class="navbar-nav mr-auto">
       <li class="nav-item">
         <a class="nav-link" href="/myposts">My posts</a>
       </li>
     </ul>
+    {% if is_auth %}
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/writepost">Write posts</a>
+        </li>
+      </ul>
+    {% endif %}
     <form class="form-post my-2 my-lg-0" action="/posts" method="POST">
       <input class="form-control mr-sm-2" type="text" placeholder="Search" name="tag">
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search by tag</button>

@@ -1,4 +1,5 @@
-from flask import render_template, session, redirect, url_for, request
+from flask import session, redirect, url_for, request
+from flask import render_template as flask_render
 
 from app import app, db, login_manager, tags_driver
 from flask_wtf import FlaskForm
@@ -6,6 +7,14 @@ from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+
+
+def render_template(template_name, **kwargs):
+	"""Custom render function that passes a set of necessary variables."""
+
+	is_auth = current_user.is_authenticated
+
+	return flask_render(template_name, is_auth=is_auth, **kwargs)
 
 
 class User(UserMixin, db.Model):
@@ -49,17 +58,23 @@ class PostForm(FlaskForm):
 class FindPostForm(FlaskForm):
 	tag = StringField('tag', validators=[Length(max=100)])
 
+class ChangeUsername(FlaskForm):
+	new_username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
+
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template("index.html")
+
+	print current_user
+
+	return render_template("index.html")
 
 @app.route('/logout')
 @login_required
 def logout():
 	logout_user()
-	return 'You are now logged out!'
+	return redirect(url_for('posts'))
 
 @app.route('/home')
 @login_required
@@ -75,7 +90,7 @@ def login():
 		if user:
 			if check_password_hash(user.password, form.password.data):
 				login_user(user, remember=form.remember.data)
-				return redirect(url_for('dashboard'))
+				return redirect(url_for('posts'))
 		return '<h1>Invalid username or password</h1>'
 		#return '<h1>' + form.username.data + ' ' + form.password.data + '</h1>'
 
@@ -195,3 +210,14 @@ def posts():
 		posts = Post.query.filter(Post.id.in_(post_ids))
 
 	return render_template('posts.html', posts=posts)
+
+
+# TODO Implement username change
+"""@app.route("/changeusername", methods=["POST"])
+@login_required
+def changeusername():
+	form = ChangeUsername()
+
+	if form.validate_on_submit():
+		new_username = form.new_username.data
+		login_user(user, remember=form.remember.data)"""
