@@ -1,4 +1,4 @@
-from flask import session, redirect, url_for, request
+from flask import session, redirect, url_for, request, flash
 from flask import render_template as flask_render
 
 from app import app, db, login_manager, tags_driver
@@ -61,6 +61,13 @@ class FindPostForm(FlaskForm):
 """class ChangeUsername(FlaskForm):
 	new_username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])"""
 
+class ChangePassword(FlaskForm):
+
+	old_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
+	new_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
+	confirm_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
+
+
 
 @app.route("/")
 @app.route("/index")
@@ -116,13 +123,41 @@ def signup():
 def dashboard():
 	return render_template("dashboard.html")
 
-@app.route("/profile")
+@app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
 
+	form = ChangePassword()
+
+	success_alert_text = None
+	failure_alert_text = None
+	password_changed = False
+	user = User.query.filter_by(id=current_user.id).first()
+
+	if form.validate_on_submit():
+		if check_password_hash(user.password, form.old_password.data):
+			if form.new_password.data == form.confirm_password.data:
+				user.password = generate_password_hash(form.new_password.data, method="sha256")
+				db.session.add(user)
+				db.session.commit()
+
+				password_changed = True
+				success_alert_text = "Password was successfully updated"
+			else:
+				failure_alert_text = "New password and confirmation differ"
+		else:
+			failure_alert_text = "Old password is incorrect"
+
+	if success_alert_text:
+		flash(success_alert_text)
+	elif failure_alert_text:
+		flash(failure_alert_text)
+
 	kwargs = {
+		"password_changed": password_changed,
 		"username": current_user.username,
 		"email": current_user.email,
+		"form": form,
 	}
 
 	return render_template("profile.html", **kwargs)
