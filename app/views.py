@@ -32,56 +32,56 @@ class Post(db.Model):
 	header = db.Column(db.String(30))
 	body = db.Column(db.String(100))
 	username = db.Column(db.String(30))
-	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+	user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 	number_of_likes = db.Column(db.Integer, default=0)
 
 class Like(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
-	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-	post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+	user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+	post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
 
 class LoginForm(FlaskForm):
-	username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
-	password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
-	remember = BooleanField('remember me')
+	username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])
+	password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
+	remember = BooleanField("remember me")
 
 class RegisterForm(FlaskForm):
-	email = StringField('email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
-	username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
-	password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+	email = StringField("email", validators=[InputRequired(), Email(message="Invalid email"), Length(max=50)])
+	username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])
+	password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
 
 class PostForm(FlaskForm):
-	header = StringField('header', validators=[InputRequired(), Length(min=1, max=30)])
-	body = StringField('post', validators=[InputRequired(), Length(min=1, max=1000)])
-	tags = StringField('tags', validators=[Length(max=100)])
+	header = StringField("header", validators=[InputRequired(), Length(min=1, max=30)])
+	body = StringField("post", validators=[InputRequired(), Length(min=1, max=1000)])
+	tags = StringField("tags", validators=[Length(max=100)])
 
 class FindPostForm(FlaskForm):
-	tag = StringField('tag', validators=[Length(max=100)])
+	tag = StringField("tag", validators=[Length(max=100)])
 
-class ChangeUsername(FlaskForm):
-	new_username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
+"""class ChangeUsername(FlaskForm):
+	new_username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])"""
 
 
-@app.route('/')
-@app.route('/index')
+@app.route("/")
+@app.route("/index")
 def index():
 
 	print current_user
 
 	return render_template("index.html")
 
-@app.route('/logout')
+@app.route("/logout")
 @login_required
 def logout():
 	logout_user()
-	return redirect(url_for('posts'))
+	return redirect(url_for("posts"))
 
-@app.route('/home')
+@app.route("/home")
 @login_required
 def home():
-	return 'The current user is' + current_user.username
+	return "The current user is" + current_user.username
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
 	form = LoginForm()
 
@@ -90,33 +90,33 @@ def login():
 		if user:
 			if check_password_hash(user.password, form.password.data):
 				login_user(user, remember=form.remember.data)
-				return redirect(url_for('posts'))
-		return '<h1>Invalid username or password</h1>'
-		#return '<h1>' + form.username.data + ' ' + form.password.data + '</h1>'
+				return redirect(url_for("posts"))
+		return "<h1>Invalid username or password</h1>"
+		#return "<h1>" + form.username.data + " " + form.password.data + "</h1>"
 
 	return render_template("login.html", form = form)
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
 	form = RegisterForm()
 
 	if form.validate_on_submit():
-		hashed_password = generate_password_hash(form.password.data, method='sha256')
+		hashed_password = generate_password_hash(form.password.data, method="sha256")
 		new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
 		db.session.add(new_user)
 		db.session.commit()
 
-		return '<h1>New user has been created!</h1>'
-		#return '<h1>' + form.username.data + ' ' + form.email.data + ' ' + form.password.data + '</h1>'
+		return "<h1>New user has been created!</h1>"
+		#return "<h1>" + form.username.data + " " + form.email.data + " " + form.password.data + "</h1>"
 
 	return render_template("signup.html", form = form)
 
-@app.route('/dashboard')
+@app.route("/dashboard")
 @login_required
 def dashboard():
 	return render_template("dashboard.html")
 
-@app.route('/profile')
+@app.route("/profile")
 @login_required
 def profile():
 
@@ -127,7 +127,7 @@ def profile():
 
 	return render_template("profile.html", **kwargs)
 
-@app.route('/writepost', methods=['GET', 'POST'])
+@app.route("/writepost", methods=["GET", "POST"])
 @login_required
 def writepost():
 	form = PostForm()
@@ -139,11 +139,11 @@ def writepost():
 		tags = form.tags.data.split()
 		tags_driver.set_tags(tags, post.id)
 
-		return '<h1>New post has been created!</h1>'
+		return "<h1>New post has been created!</h1>"
 
 	return render_template("writepost.html",form=form)
 
-@app.route('/myposts')
+@app.route("/myposts")
 @login_required
 def my_posts():
 
@@ -151,7 +151,7 @@ def my_posts():
 
 	return render_template("my_posts.html", username=current_user.username, posts=posts)
 
-@app.route('/allposts')
+@app.route("/allposts")
 @login_required
 def all_posts():
 
@@ -161,7 +161,7 @@ def all_posts():
 
 	return render_template("all_posts.html", posts=posts)
 
-@app.route('/like/<int:post_id>')
+@app.route("/like/<int:post_id>")
 @login_required
 def like(post_id):
 
@@ -174,9 +174,9 @@ def like(post_id):
 
 	db.session.commit()
 
-	return redirect(url_for('all_posts'))
+	return redirect(url_for("all_posts"))
 
-@app.route('/post/<int:post_id>')
+@app.route("/post/<int:post_id>")
 @login_required
 def post(post_id):
 	post = Post.query.filter_by(id=post_id).first()
@@ -185,7 +185,7 @@ def post(post_id):
 	return render_template("post.html", post=post, tags=tags)
 
 
-@app.route('/findposts', methods=["GET", "POST"])
+@app.route("/findposts", methods=["GET", "POST"])
 @login_required
 def findposts():
 
@@ -197,7 +197,7 @@ def findposts():
 		post_ids = tags_driver.get_posts(tag)
 		posts = Post.query.filter(Post.id.in_(post_ids))
 
-	return render_template('findposts.html', form=form, posts=posts)
+	return render_template("findposts.html", form=form, posts=posts)
 
 @app.route("/posts", methods=["GET", "POST"])
 def posts():
@@ -209,7 +209,8 @@ def posts():
 		post_ids = tags_driver.get_posts(tag)
 		posts = Post.query.filter(Post.id.in_(post_ids))
 
-	return render_template('posts.html', posts=posts)
+	return render_template("posts.html", posts=posts)
+
 
 
 # TODO Implement username change

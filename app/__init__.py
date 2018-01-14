@@ -6,9 +6,9 @@ from flask_redis import FlaskRedis
 
 
 app = Flask(__name__)
-app.config['REDIS_URL'] = "redis://localhost:6379"
-app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/ekaterina/Lyceum_IVR/database.db'
+app.config["REDIS_URL"] = "redis://localhost:6379"
+app.config["SECRET_KEY"] = "Thisissupposedtobesecret!"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////home/ekaterina/Lyceum_IVR/database.db"
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
