@@ -253,12 +253,17 @@ def post(post_id):
 			username=current_user.username, user_id=current_user.id,
 			post_id=post_id, body = form.body.data
 		)
+
 		post.number_of_comments += 1
 		db.session.add(comment)
 		db.session.add(post)
 		db.session.commit()
 
-	return render_template("post.html", post=post, tags=tags, post_comments=post_comments, form=form)
+	return render_template(
+		"post.html", post=post, tags=tags,
+		post_comments=post_comments, form=form,
+		username=current_user.username
+	)
 
 
 @app.route("/findposts", methods=["GET", "POST"])
@@ -287,6 +292,18 @@ def posts():
 
 	return render_template("posts.html", posts=posts)
 
+
+@app.route("/delete_comment/<int:comment_id>", methods=["POST"])
+@login_required
+def delete_comment(comment_id):
+
+	comment = Comment.query.get(comment_id)
+
+	if comment.user_id == current_user.id:
+		Comment.query.filter_by(id=comment_id).delete()
+		db.session.commit()
+
+	return redirect(url_for("post", post_id=comment.post_id))
 
 
 # TODO Implement username change

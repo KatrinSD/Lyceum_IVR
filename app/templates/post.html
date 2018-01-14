@@ -28,6 +28,12 @@ Post
      </form>
 	{% for comment in post_comments %}
 		<a class="nav-link" href={{ url_for("profile", user_id=comment.user_id) }}><h3>{{ comment.username }}</h3></a>
+
+		{% if comment.username == username %}
+			<form class="form-delete-comment" method="POST" action={{ url_for("delete_comment", comment_id=comment.id) }}>
+				<button class="btn btn-danger glyphicon glyphicon-remove" type="submit"></button>
+			</form>
+		{% endif %}
 		<p> {{ comment.body }} </p>
 	{% endfor %}
 
