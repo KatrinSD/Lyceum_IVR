@@ -26,3 +26,13 @@ class TagsDriver(object):
 	def get_posts(self, tag):
 		"""Returns post_id by tags."""
 		return self.db.smembers(self.change_tag(tag))
+
+	def remove_post_id_from_tags(self, tag, post_id):
+		"""Removes post_id from tag."""
+
+		self.db.srem(self.change_tag(tag), post_id)
+
+	def delete_post_id(self, post_id):
+		"""Removes post_id record."""
+
+		self.db.delete(self.change_post_id(post_id))

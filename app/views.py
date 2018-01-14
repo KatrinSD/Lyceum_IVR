@@ -306,6 +306,25 @@ def delete_comment(comment_id):
 	return redirect(url_for("post", post_id=comment.post_id))
 
 
+@app.route("/delete_post/<int:post_id>", methods=["POST"])
+@login_required
+def delete_post(post_id):
+
+	Post.query.filter_by(id=post_id).delete()
+	Comment.query.filter_by(post_id=post_id).delete()
+	Like.query.filter_by(post_id=post_id).delete()
+
+	db.session.commit()
+
+	tags = tags_driver.get_tags(post_id)
+
+	for tag in tags:
+		tags_driver.remove_post_id_from_tags(tag, post_id)
+
+	tags_driver.delete_post_id(post_id)
+
+	return redirect(url_for("my_posts"))
+
 # TODO Implement username change
 """@app.route("/changeusername", methods=["POST"])
 @login_required

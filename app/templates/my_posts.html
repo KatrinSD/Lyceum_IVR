@@ -15,8 +15,13 @@ My posts
 <h1> {{username}}'s  posts:</h1>
 
 	{% for post in posts %}
-		<h4> {{ post.header }} </h4>
+		<a class="nav-link" href={{ url_for("post", post_id=post.id) }}><h3>{{ post.header }}</h3></a>
 		<p> {{ post.body }} </p>
+		<form class="form-delete-post" method="POST" action={{ url_for("delete_post", post_id=post.id) }}>
+			<button class="btn btn-danger glyphicon glyphicon-remove" type="submit"></button>
+		</form>
+		<h5> Likes: {{ post.number_of_likes }} </h5>
+		<h5> Comments: {{ post.number_of_comments }} </h5>
 	{% endfor %}
 
 </div> <!-- /container -->
