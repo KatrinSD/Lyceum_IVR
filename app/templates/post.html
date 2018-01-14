@@ -14,7 +14,7 @@ Post
 
 <h1> Post:</h1>
 
-	<h3> {{ post.username }} </h3>
+	<a class="nav-link" href={{ url_for("profile", user_id=post.user_id) }}><h3>{{ post.username }}</h3></a>
 	<h4> {{ post.header }} </h4>
 	<p> {{ post.body }} </p>
 	<p> {{ tags }} </p>
