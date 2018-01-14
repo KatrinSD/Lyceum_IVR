@@ -18,7 +18,19 @@ Post
 	<h4> {{ post.header }} </h4>
 	<p> {{ post.body }} </p>
 	<p> {{ tags }} </p>
-	<h5> {{ post.number_of_likes }} </h5>
+	<h5> Likes: {{ post.number_of_likes }} </h5>
+	<h5> Comments: {{ post.number_of_comments }} </h5>
+	<form class="form-signin" method = "POST" action = {{ url_for("post", post_id=post.id) }}>
+        <h2 class="form-signin-heading">Write a comment</h2>
+        {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.body) }}
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Write</button>
+     </form>
+	{% for comment in post_comments %}
+		<a class="nav-link" href={{ url_for("profile", user_id=comment.user_id) }}><h3>{{ comment.username }}</h3></a>
+		<p> {{ comment.body }} </p>
+	{% endfor %}
+
 
 
 </div> <!-- /container -->

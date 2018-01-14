@@ -34,11 +34,20 @@ class Post(db.Model):
 	username = db.Column(db.String(30))
 	user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 	number_of_likes = db.Column(db.Integer, default=0)
+	number_of_comments = db.Column(db.Integer, default=0)
 
 class Like(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 	post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+
+class Comment(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	username = db.Column(db.String(30))
+	user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+	post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+	body = db.Column(db.String(100))
+
 
 class LoginForm(FlaskForm):
 	username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])
@@ -61,11 +70,14 @@ class FindPostForm(FlaskForm):
 """class ChangeUsername(FlaskForm):
 	new_username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])"""
 
-class ChangePassword(FlaskForm):
+class ChangePasswordForm(FlaskForm):
 
 	old_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
 	new_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
 	confirm_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
+
+class CommentForm(FlaskForm):
+	body = StringField("post", validators=[InputRequired(), Length(min=1, max=1000)])
 
 
 
@@ -126,7 +138,7 @@ def dashboard():
 @login_required
 def profile(user_id=None):
 
-	form = ChangePassword()
+	form = ChangePasswordForm()
 
 	if user_id is None:
 		user_id = current_user.id
@@ -187,7 +199,8 @@ def writepost():
 		db.session.add(post)
 		db.session.commit()
 		tags = form.tags.data.split()
-		tags_driver.set_tags(tags, post.id)
+		if tags:
+			tags_driver.set_tags(tags, post.id)
 
 		return redirect(url_for("posts"))
 
@@ -226,13 +239,26 @@ def like(post_id):
 
 	return redirect(url_for("posts"))
 
-@app.route("/post/<int:post_id>")
+@app.route("/post/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def post(post_id):
+	form = CommentForm()
+
 	post = Post.query.filter_by(id=post_id).first()
 	tags = ", ".join(sorted(tags_driver.get_tags(post_id)))
+	post_comments = Comment.query.filter_by(post_id=post_id)
+	
+	if form.validate_on_submit():
+		comment = Comment(
+			username=current_user.username, user_id=current_user.id,
+			post_id=post_id, body = form.body.data
+		)
+		post.number_of_comments += 1
+		db.session.add(comment)
+		db.session.add(post)
+		db.session.commit()
 
-	return render_template("post.html", post=post, tags=tags)
+	return render_template("post.html", post=post, tags=tags, post_comments=post_comments, form=form)
 
 
 @app.route("/findposts", methods=["GET", "POST"])
