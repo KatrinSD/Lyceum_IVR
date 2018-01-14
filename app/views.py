@@ -113,9 +113,7 @@ def signup():
 		db.session.add(new_user)
 		db.session.commit()
 
-		return "<h1>New user has been created!</h1>"
-		#return "<h1>" + form.username.data + " " + form.email.data + " " + form.password.data + "</h1>"
-
+		return redirect(url_for("login"))
 	return render_template("signup.html", form = form)
 
 @app.route("/dashboard")
@@ -124,41 +122,58 @@ def dashboard():
 	return render_template("dashboard.html")
 
 @app.route("/profile", methods=["GET", "POST"])
+@app.route("/profile/<int:user_id>", methods=["GET", "POST"])
 @login_required
-def profile():
+def profile(user_id=None):
 
 	form = ChangePassword()
 
-	success_alert_text = None
-	failure_alert_text = None
-	password_changed = False
-	user = User.query.filter_by(id=current_user.id).first()
+	if user_id is None:
+		user_id = current_user.id
 
-	if form.validate_on_submit():
-		if check_password_hash(user.password, form.old_password.data):
-			if form.new_password.data == form.confirm_password.data:
-				user.password = generate_password_hash(form.new_password.data, method="sha256")
-				db.session.add(user)
-				db.session.commit()
+	user = User.query.filter_by(id=user_id).first()
 
-				password_changed = True
-				success_alert_text = "Password was successfully updated"
-			else:
-				failure_alert_text = "New password and confirmation differ"
-		else:
-			failure_alert_text = "Old password is incorrect"
-
-	if success_alert_text:
-		flash(success_alert_text)
-	elif failure_alert_text:
-		flash(failure_alert_text)
+	self_profile = False
 
 	kwargs = {
-		"password_changed": password_changed,
-		"username": current_user.username,
-		"email": current_user.email,
-		"form": form,
+		"username": user.username,
+		"email": user.email,
 	}
+
+	print user_id
+
+	if user_id == current_user.id:
+
+		self_profile = True
+		success_alert_text = None
+		failure_alert_text = None
+		password_changed = False
+
+		if form.validate_on_submit():
+			if check_password_hash(user.password, form.old_password.data):
+				if form.new_password.data == form.confirm_password.data:
+					user.password = generate_password_hash(form.new_password.data, method="sha256")
+					db.session.add(user)
+					db.session.commit()
+
+					password_changed = True
+					success_alert_text = "Password was successfully updated"
+				else:
+					failure_alert_text = "New password and confirmation differ"
+			else:
+				failure_alert_text = "Old password is incorrect"
+
+		if success_alert_text:
+			flash(success_alert_text)
+		elif failure_alert_text:
+			flash(failure_alert_text)
+
+		kwargs.update({
+			"password_changed": password_changed,
+			"form": form,
+		})
+
+	kwargs.update({"self_profile": self_profile})
 
 	return render_template("profile.html", **kwargs)
 
@@ -174,7 +189,7 @@ def writepost():
 		tags = form.tags.data.split()
 		tags_driver.set_tags(tags, post.id)
 
-		return "<h1>New post has been created!</h1>"
+		return redirect(url_for("posts"))
 
 	return render_template("writepost.html",form=form)
 
@@ -209,7 +224,7 @@ def like(post_id):
 
 	db.session.commit()
 
-	return redirect(url_for("all_posts"))
+	return redirect(url_for("posts"))
 
 @app.route("/post/<int:post_id>")
 @login_required

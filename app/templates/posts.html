@@ -11,8 +11,8 @@ Posts
 <h1> Posts:</h1>
 
 	{% for post in posts %}
-		<h3> {{ post.username }} </h3>
-		<h4> {{ post.header }} </h4>
+		<a class="nav-link" href={{ url_for("profile", user_id=post.user_id) }}><h3>{{ post.username }}</h3></a>
+		<a class="nav-link" href={{ url_for("post", post_id=post.id) }}><h3>{{ post.header }}</h3></a>
 		<p> {{ post.body }} </p>
 		<form action = "{{url_for('like', post_id=post.id)}}">
 			<button class="btn btn-lg btn-primary btn-block" type="submit">Like</button>
