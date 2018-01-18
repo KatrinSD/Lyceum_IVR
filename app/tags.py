@@ -11,7 +11,7 @@ class TagsDriver(object):
 
 	def change_post_id(self, post_id):
 		"""Changes post_id into redis key."""
-		return "POST_ID:{0}".format(post_id)
+		return "TAG_POST_ID:{0}".format(post_id)
 
 	def set_tags(self, tags, post_id):
 		"""Adds tags to post_id and adds post_id to tags."""
