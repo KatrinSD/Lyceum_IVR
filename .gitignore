@@ -102,3 +102,6 @@ ENV/
 
 # database
 database.db
+
+# images directory
+app/static/img
