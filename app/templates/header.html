@@ -1,8 +1,8 @@
 {% block header %}
 <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-  <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+  <!--<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
-  </button>
+  </button>-->
   {% if not is_auth %}
     <a class="navbar-brand" href="/signup">Sign up</a>
     <a class="navbar-brand" href="/login">Log in</a>
@@ -32,6 +32,13 @@
           <a class="nav-link" href="/writepost">Write posts</a>
         </li>
       </ul>
+      {% if drafts_count %}
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/drafts">You have {{ drafts_count }} drafts</a>
+          </li>
+        </ul>
+      {% endif %}
     {% endif %}
     <form class="form-post my-2 my-lg-0" action="/posts" method="POST">
       <input class="form-control mr-sm-2" type="text" placeholder="Search" name="tag">

@@ -26,6 +26,10 @@ Post
         {{ wtf.form_field(form.body) }}
         <button class="btn btn-lg btn-primary btn-block" type="submit">Write</button>
      </form>
+	{% for image_id in post_image_ids %}\
+		<img src='{{ url_for("static", filename=image_id)}}'>
+	{% endfor %}
+	<img src='{{url_for("static", filename="img/test.png")}}'>
 	{% for comment in post_comments %}
 		<a class="nav-link" href={{ url_for("profile", user_id=comment.user_id) }}><h3>{{ comment.username }}</h3></a>
 

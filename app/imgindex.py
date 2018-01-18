@@ -16,4 +16,5 @@ class ImgIndexDriver(object):
 	def set_image_ids(self, image_ids, post_id):
 		"""Save image ids of the post id."""
 
-		self.db.sadd(self.change_post_id(post_id), image_ids)
+		for image_id in image_ids:
+			self.db.sadd(self.change_post_id(post_id), image_id)

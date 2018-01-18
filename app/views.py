@@ -1,12 +1,15 @@
+import uuid
+
 from flask import session, redirect, url_for, request, flash
 from flask import render_template as flask_render
-
-from app import app, db, login_manager, tags_driver
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField
+from flask_wtf.file import FileField, FileAllowed
+from wtforms import StringField, PasswordField, BooleanField, FileField
 from wtforms.validators import InputRequired, Email, Length
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from app import app, db, login_manager, tags_driver, photos, img_index_driver
 
 
 def render_template(template_name, **kwargs):
@@ -14,7 +17,19 @@ def render_template(template_name, **kwargs):
 
 	is_auth = current_user.is_authenticated
 
-	return flask_render(template_name, is_auth=is_auth, **kwargs)
+	drafts_count = None
+	if is_auth:
+		drafts_count = Post.query.filter_by(
+			user_id=current_user.id,
+			is_draft=True,
+		).count()
+
+	print "DRAFTS: {0}".format(drafts_count)
+
+	return flask_render(template_name,
+		is_auth=is_auth, drafts_count=drafts_count,
+		**kwargs
+	)
 
 
 class User(UserMixin, db.Model):
@@ -35,6 +50,8 @@ class Post(db.Model):
 	user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 	number_of_likes = db.Column(db.Integer, default=0)
 	number_of_comments = db.Column(db.Integer, default=0)
+	number_of_photos = db.Column(db.Integer, default=0)
+	is_draft = db.Column(db.Boolean)
 
 class Like(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -63,6 +80,10 @@ class PostForm(FlaskForm):
 	header = StringField("header", validators=[InputRequired(), Length(min=1, max=30)])
 	body = StringField("post", validators=[InputRequired(), Length(min=1, max=1000)])
 	tags = StringField("tags", validators=[Length(max=100)])
+
+#class UploadPhotosForm(FlaskForm):
+	#photos = FileField("photos", validators=[(FileAllowed(photos, "Images only"))])
+#	photos = FileField("photos")
 
 class FindPostForm(FlaskForm):
 	tag = StringField("tag", validators=[Length(max=100)])
@@ -195,16 +216,60 @@ def writepost():
 	form = PostForm()
 
 	if form.validate_on_submit():
-		post = Post(header=form.header.data, body=form.body.data, username=current_user.username, user_id=current_user.id)
+		post = Post(
+			header=form.header.data,
+			body=form.body.data,
+			username=current_user.username,
+			user_id=current_user.id,
+			is_draft=True,
+		)
 		db.session.add(post)
 		db.session.commit()
 		tags = form.tags.data.split()
 		if tags:
 			tags_driver.set_tags(tags, post.id)
 
-		return redirect(url_for("posts"))
+		return redirect(url_for("upload_photos", post_id=post.id))
 
 	return render_template("writepost.html",form=form)
+
+@app.route("/uploadphotos/<int:post_id>", methods=["GET", "POST"])
+@login_required
+def upload_photos(post_id):
+
+	post =  Post.query.filter_by(
+		user_id=current_user.id,
+		id=post_id,
+		is_draft=True
+	).first()
+
+	# TODO: add raise here
+	if post is None:
+		return redirect(url_for("posts"))
+
+	image_ids = []
+
+	if request.method == "POST" and len(request.files.getlist("photos")):
+		for image in request.files.getlist("photos"):
+			image_id = str(uuid.uuid4())
+			image_id = ".".join([image_id, image.filename.rsplit(".", 1)[1]])
+			image.filename = image_id
+			photos.save(image)
+			image_id = "/".join(["img", image_id])
+			image_ids.append(image_id)
+
+		print "ROUTEIIS: {0}".format(image_ids)
+		img_index_driver.set_image_ids(image_ids, post.id)
+
+		post.number_of_photos = len(image_ids)
+		post.is_draft = False
+		db.session.add(post)
+		db.session.commit()
+
+		return redirect(url_for("posts"))
+
+	return render_template("uploadphotos.html", post_id=post_id)
+
 
 @app.route("/myposts")
 @login_required
@@ -213,16 +278,6 @@ def my_posts():
 	posts = Post.query.filter_by(user_id=current_user.id)
 
 	return render_template("my_posts.html", username=current_user.username, posts=posts)
-
-@app.route("/allposts")
-@login_required
-def all_posts():
-
-
-
-	posts = Post.query
-
-	return render_template("all_posts.html", posts=posts)
 
 @app.route("/like/<int:post_id>")
 @login_required
@@ -245,9 +300,13 @@ def post(post_id):
 	form = CommentForm()
 
 	post = Post.query.filter_by(id=post_id).first()
+	print "RT: {0}".format(tags_driver.get_tags(post_id))
 	tags = ", ".join(sorted(tags_driver.get_tags(post_id)))
 	post_comments = Comment.query.filter_by(post_id=post_id)
-	
+	post_image_ids = img_index_driver.get_image_ids(post_id)
+
+	print "PII: {0}".format(post_image_ids)
+
 	if form.validate_on_submit():
 		comment = Comment(
 			username=current_user.username, user_id=current_user.id,
@@ -259,10 +318,15 @@ def post(post_id):
 		db.session.add(post)
 		db.session.commit()
 
+	print post_image_ids
+
+	print app.config
+
 	return render_template(
 		"post.html", post=post, tags=tags,
 		post_comments=post_comments, form=form,
-		username=current_user.username
+		username=current_user.username,
+		post_image_ids=post_image_ids,
 	)
 
 
@@ -324,13 +388,3 @@ def delete_post(post_id):
 	tags_driver.delete_post_id(post_id)
 
 	return redirect(url_for("my_posts"))
-
-# TODO Implement username change
-"""@app.route("/changeusername", methods=["POST"])
-@login_required
-def changeusername():
-	form = ChangeUsername()
-
-	if form.validate_on_submit():
-		new_username = form.new_username.data
-		login_user(user, remember=form.remember.data)"""
