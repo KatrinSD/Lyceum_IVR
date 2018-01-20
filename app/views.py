@@ -253,7 +253,7 @@ def upload_photos(post_id):
 
 	image_ids = []
 
-	if request.method == "POST" and len(request.files.getlist("photos")):
+	if request.method == "POST":
 		files = request.files.getlist("photos")
 		if len(files) and files[0].filename:
 
@@ -305,6 +305,10 @@ def post(post_id):
 	form = CommentForm()
 
 	post = Post.query.filter_by(id=post_id).first()
+
+	if post is None:
+		return render_template("404.html")
+
 	print "RT: {0}".format(tags_driver.get_tags(post_id))
 	tags = ", ".join(sorted(tags_driver.get_tags(post_id)))
 	post_comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.date_created.desc())
