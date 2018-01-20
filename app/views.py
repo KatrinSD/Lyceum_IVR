@@ -43,7 +43,13 @@ def render_http_error(error_code, msg=None):
 def render_401_unauthorized(entity_name):
 	"""Returns html for Unauthorized error."""
 
-	return render_http_error(401, msg)
+	return render_http_error(401)
+
+
+def render_403_forbidden():
+	"""Returns html for Forbidden error."""
+
+	return render_http_error(403)
 
 
 def render_404_not_found(entity_name):
@@ -62,8 +68,8 @@ def render_500_internal_server_error():
 
 TEMPLATED_HTTP_ERRORS = (
 	401,
+	403,
 	404,
-	500,
 )
 """HTTP errors that have custom templates."""
 
@@ -71,8 +77,6 @@ TEMPLATED_HTTP_ERRORS = (
 @app.errorhandler(Exception)
 def handle_error(e):
 	"""Handles exceptions and returns most presice http error possible."""
-
-	print "HERE" + e
 
 	code = 500
 	if isinstance(e, HTTPException) and code not in TEMPLATED_HTTP_ERRORS:
@@ -115,8 +119,6 @@ class Comment(db.Model):
 	post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
 	body = db.Column(db.String(100))
 	date_created = db.Column(db.DateTime, index=True, default=datetime.datetime.utcnow())
-
-
 
 class LoginForm(FlaskForm):
 	username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])
@@ -288,7 +290,7 @@ def writepost():
 @login_required
 def upload_photos(post_id):
 
-	post =  Post.query.filter_by(
+	post = Post.query.filter_by(
 		user_id=current_user.id,
 		id=post_id,
 		is_draft=True
@@ -380,7 +382,6 @@ def post(post_id):
 
 
 @app.route("/findposts", methods=["GET", "POST"])
-@login_required
 def findposts():
 
 	form = FindPostForm()
@@ -418,6 +419,8 @@ def delete_comment(comment_id):
 	if comment.user_id == current_user.id:
 		Comment.query.filter_by(id=comment_id).delete()
 		db.session.commit()
+	else:
+		return render_403_forbidden()
 
 	return redirect(url_for("post", post_id=comment.post_id))
 
@@ -429,6 +432,9 @@ def delete_post(post_id):
 	post = Post.query.get(post_id)
 	if post is None:
 		return render_404_not_found("post")
+
+	if post.user_id != current_user.id:
+		return render_403_forbidden()
 
 	Post.query.filter_by(id=post_id).delete()
 	Comment.query.filter_by(post_id=post_id).delete()
@@ -463,15 +469,18 @@ def delete_draft(post_id):
 	if draft is None:
 		return render_404_not_found("draft")
 
-	if draft.user_id == current_user.id and draft.is_draft:
-		Post.query.filter_by(id=post_id).delete()
-		db.session.commit()
+	if draft.user_id == current_user.id:
+		if draft.is_draft:
+			Post.query.filter_by(id=post_id).delete()
+			db.session.commit()
 
-		tags = tags_driver.get_tags(post_id)
+			tags = tags_driver.get_tags(post_id)
 
-		for tag in tags:
-			tags_driver.remove_post_id_from_tags(tag, post_id)
+			for tag in tags:
+				tags_driver.remove_post_id_from_tags(tag, post_id)
 
-		tags_driver.delete_post_id(post_id)
+			tags_driver.delete_post_id(post_id)
+	else:
+		return render_403_forbidden()
 
 	return redirect(url_for("drafts"))
