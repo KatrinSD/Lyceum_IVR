@@ -40,6 +40,12 @@ def render_http_error(error_code, msg=None):
 	return render_template(template_name, error_msg=msg)
 
 
+def render_401_unauthorized(entity_name):
+	"""Returns html for Unauthorized error."""
+
+	return render_http_error(401, msg)
+
+
 def render_404_not_found(entity_name):
 	"""Returns html for Not Found error for entity."""
 
@@ -55,6 +61,7 @@ def render_500_internal_server_error():
 
 
 TEMPLATED_HTTP_ERRORS = (
+	401,
 	404,
 	500,
 )
@@ -64,6 +71,8 @@ TEMPLATED_HTTP_ERRORS = (
 @app.errorhandler(Exception)
 def handle_error(e):
 	"""Handles exceptions and returns most presice http error possible."""
+
+	print "HERE" + e
 
 	code = 500
 	if isinstance(e, HTTPException) and code not in TEMPLATED_HTTP_ERRORS:
