@@ -254,17 +254,18 @@ def upload_photos(post_id):
 	image_ids = []
 
 	if request.method == "POST" and len(request.files.getlist("photos")):
-		for image in request.files.getlist("photos"):
-			image_id = str(uuid.uuid4())
-			image_id = ".".join([image_id, image.filename.rsplit(".", 1)[1]])
-			image.filename = image_id
-			photos.save(image)
-			image_id = "/".join(["img", image_id])
-			image_ids.append(image_id)
+		files = request.files.getlist("photos")
+		if len(files) and files[0].filename:
 
-		print "ROUTEIIS: {0}".format(image_ids)
+			for image in request.files.getlist("photos"):
+				image_id = str(uuid.uuid4())
+				image_id = ".".join([image_id, image.filename.rsplit(".", 1)[1]])
+				image.filename = image_id
+				photos.save(image)
+				image_id = "/".join(["img", image_id])
+				image_ids.append(image_id)
+
 		img_index_driver.set_image_ids(image_ids, post.id)
-
 		post.number_of_photos = len(image_ids)
 		post.is_draft = False
 		db.session.add(post)
