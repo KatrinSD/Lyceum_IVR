@@ -337,11 +337,17 @@ def my_posts():
 @login_required
 def like(post_id):
 
-	like = Like(post_id=post_id, user_id=current_user.id)
-	db.session.add(like)
+	like_change = 1
+
+	if Like.query.filter_by(post_id=post_id, user_id=current_user.id).first() is not None:
+		Like.query.filter_by(post_id=post_id, user_id=current_user.id).delete()
+		like_change = -1
+	else:
+		like = Like(post_id=post_id, user_id=current_user.id)
+		db.session.add(like)
 
 	post = Post.query.filter_by(id=post_id).first()
-	post.number_of_likes += 1
+	post.number_of_likes += like_change
 	db.session.add(post)
 
 	db.session.commit()
