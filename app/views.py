@@ -9,6 +9,7 @@ from wtforms import StringField, PasswordField, BooleanField, FileField
 from wtforms.validators import InputRequired, Email, Length
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.exceptions import HTTPException
 
 from app import app, db, login_manager, tags_driver, photos, img_index_driver
 
@@ -25,12 +26,50 @@ def render_template(template_name, **kwargs):
 			is_draft=True,
 		).count()
 
-	print "DRAFTS: {0}".format(drafts_count)
-
 	return flask_render(template_name,
 		is_auth=is_auth, drafts_count=drafts_count,
 		**kwargs
 	)
+
+
+def render_http_error(error_code, msg=None):
+	"""Returns html for requested http error."""
+
+	template_name = ".".join([str(error_code), "html"])
+
+	return render_template(template_name, error_msg=msg)
+
+
+def render_404_not_found(entity_name):
+	"""Returns html for Not Found error for entity."""
+
+	msg = "Requested {0} not found".format(entity_name)
+
+	return render_http_error(404, msg)
+
+
+def render_500_internal_server_error():
+	"""Returns html for Internal Server Error error."""
+
+	return render_http_error(500)
+
+
+TEMPLATED_HTTP_ERRORS = (
+	404,
+	500,
+)
+"""HTTP errors that have custom templates."""
+
+
+@app.errorhandler(Exception)
+def handle_error(e):
+	"""Handles exceptions and returns most presice http error possible."""
+
+	code = 500
+	if isinstance(e, HTTPException) and code not in TEMPLATED_HTTP_ERRORS:
+		code = e.code
+
+	return render_http_error(code)
 
 
 class User(UserMixin, db.Model):
@@ -110,8 +149,6 @@ class CommentForm(FlaskForm):
 @app.route("/index")
 def index():
 
-	print current_user
-
 	return render_template("index.html")
 
 @app.route("/logout")
@@ -170,14 +207,15 @@ def profile(user_id=None):
 
 	user = User.query.filter_by(id=user_id).first()
 
+	if user is None:
+		return render_404_not_found("user")
+
 	self_profile = False
 
 	kwargs = {
 		"username": user.username,
 		"email": user.email,
 	}
-
-	print user_id
 
 	if user_id == current_user.id:
 
@@ -307,14 +345,11 @@ def post(post_id):
 	post = Post.query.filter_by(id=post_id).first()
 
 	if post is None:
-		return render_template("404.html")
+		return render_404_not_found("post")
 
-	print "RT: {0}".format(tags_driver.get_tags(post_id))
 	tags = ", ".join(sorted(tags_driver.get_tags(post_id)))
 	post_comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.date_created.desc())
 	post_image_ids = img_index_driver.get_image_ids(post_id)
-
-	print "PII: {0}".format(post_image_ids)
 
 	if form.validate_on_submit():
 		comment = Comment(
@@ -326,10 +361,6 @@ def post(post_id):
 		db.session.add(comment)
 		db.session.add(post)
 		db.session.commit()
-
-	print post_image_ids
-
-	print app.config
 
 	return render_template(
 		"post.html", post=post, tags=tags,
@@ -372,6 +403,9 @@ def delete_comment(comment_id):
 
 	comment = Comment.query.get(comment_id)
 
+	if comment is None:
+		return render_404_not_found("comment")
+
 	if comment.user_id == current_user.id:
 		Comment.query.filter_by(id=comment_id).delete()
 		db.session.commit()
@@ -382,6 +416,10 @@ def delete_comment(comment_id):
 @app.route("/delete_post/<int:post_id>", methods=["POST"])
 @login_required
 def delete_post(post_id):
+
+	post = Post.query.get(post_id)
+	if post is None:
+		return render_404_not_found("post")
 
 	Post.query.filter_by(id=post_id).delete()
 	Comment.query.filter_by(post_id=post_id).delete()
@@ -413,6 +451,8 @@ def drafts():
 def delete_draft(post_id):
 
 	draft = Post.query.get(post_id)
+	if draft is None:
+		return render_404_not_found("draft")
 
 	if draft.user_id == current_user.id and draft.is_draft:
 		Post.query.filter_by(id=post_id).delete()
