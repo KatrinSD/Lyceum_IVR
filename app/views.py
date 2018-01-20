@@ -17,7 +17,7 @@ def render_template(template_name, **kwargs):
 
 	is_auth = current_user.is_authenticated
 
-	drafts_count = None
+	drafts_count = 0
 	if is_auth:
 		drafts_count = Post.query.filter_by(
 			user_id=current_user.id,
@@ -388,3 +388,32 @@ def delete_post(post_id):
 	tags_driver.delete_post_id(post_id)
 
 	return redirect(url_for("my_posts"))
+
+
+@app.route("/drafts", methods=["GET"])
+@login_required
+def drafts():
+
+	drafts = Post.query.filter_by(user_id=current_user.id, is_draft=True)
+
+	return render_template("drafts.html", drafts=drafts)
+
+
+@app.route("/delete_draft/<int:post_id>", methods=["POST"])
+@login_required
+def delete_draft(post_id):
+
+	draft = Post.query.get(post_id)
+
+	if draft.user_id == current_user.id and draft.is_draft:
+		Post.query.filter_by(id=post_id).delete()
+		db.session.commit()
+
+		tags = tags_driver.get_tags(post_id)
+
+		for tag in tags:
+			tags_driver.remove_post_id_from_tags(tag, post_id)
+
+		tags_driver.delete_post_id(post_id)
+
+	return redirect(url_for("drafts"))

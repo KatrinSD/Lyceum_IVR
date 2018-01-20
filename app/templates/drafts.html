@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+Drafts
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+
+<h1> Unfinished posts:</h1>
+
+	{% for draft in drafts %}
+		<h3>{{ draft.username }}</h3>
+		<h3>{{ draft.header }}</h3>
+		<p> {{ draft.body }} </p>
+		<form action = "{{url_for('upload_photos', post_id=draft.id)}}">
+			<button class="btn btn-lg btn-primary btn-block" type="submit">Upload photos</button>
+		</form>
+		<form action = "{{url_for('delete_draft', post_id=draft.id)}}" method="POST">
+			<button class="btn btn-lg btn-danger btn-block" type="submit">Delete draft</button>
+		</form>
+	{% endfor %}
+
+</div> <!-- /container -->
+{% endblock %}
