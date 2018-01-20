@@ -27,3 +27,6 @@ img_index_driver = ImgIndexDriver(redis)
 tags_driver = TagsDriver(redis)
 
 from app import views
+from app import utils
+
+app.jinja_env.globals.update(format_datetime=utils.format_datetime)

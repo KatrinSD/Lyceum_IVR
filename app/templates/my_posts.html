@@ -16,6 +16,7 @@ My posts
 
 	{% for post in posts %}
 		<a class="nav-link" href={{ url_for("post", post_id=post.id) }}><h3>{{ post.header }}</h3></a>
+		<p>Created on: {{ format_datetime(post.date_created) }}</p>
 		<p> {{ post.body }} </p>
 		<form class="form-delete-post" method="POST" action={{ url_for("delete_post", post_id=post.id) }}>
 			<button class="btn btn-danger glyphicon glyphicon-remove" type="submit"></button>

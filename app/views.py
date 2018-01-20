@@ -1,3 +1,4 @@
+import datetime
 import uuid
 
 from flask import session, redirect, url_for, request, flash
@@ -52,6 +53,7 @@ class Post(db.Model):
 	number_of_comments = db.Column(db.Integer, default=0)
 	number_of_photos = db.Column(db.Integer, default=0)
 	is_draft = db.Column(db.Boolean)
+	date_created = db.Column(db.DateTime, index=True, default=datetime.datetime.utcnow())
 
 class Like(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -64,6 +66,8 @@ class Comment(db.Model):
 	user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 	post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
 	body = db.Column(db.String(100))
+	date_created = db.Column(db.DateTime, index=True, default=datetime.datetime.utcnow())
+
 
 
 class LoginForm(FlaskForm):
@@ -275,7 +279,7 @@ def upload_photos(post_id):
 @login_required
 def my_posts():
 
-	posts = Post.query.filter_by(user_id=current_user.id)
+	posts = Post.query.filter_by(user_id=current_user.id).order_by(Post.date_created.desc())
 
 	return render_template("my_posts.html", username=current_user.username, posts=posts)
 
@@ -302,7 +306,7 @@ def post(post_id):
 	post = Post.query.filter_by(id=post_id).first()
 	print "RT: {0}".format(tags_driver.get_tags(post_id))
 	tags = ", ".join(sorted(tags_driver.get_tags(post_id)))
-	post_comments = Comment.query.filter_by(post_id=post_id)
+	post_comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.date_created.desc())
 	post_image_ids = img_index_driver.get_image_ids(post_id)
 
 	print "PII: {0}".format(post_image_ids)
@@ -349,10 +353,10 @@ def posts():
 
 	tag = request.form.get("tag")
 	if tag is None:
-		posts = Post.query
+		posts = Post.query.order_by(Post.date_created.desc())
 	else:
 		post_ids = tags_driver.get_posts(tag)
-		posts = Post.query.filter(Post.id.in_(post_ids))
+		posts = Post.query.filter(Post.id.in_(post_ids)).order_by(Post.date_created.desc())
 
 	return render_template("posts.html", posts=posts)
 

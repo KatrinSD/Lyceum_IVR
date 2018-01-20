@@ -16,6 +16,7 @@ Post
 
 	<a class="nav-link" href={{ url_for("profile", user_id=post.user_id) }}><h3>{{ post.username }}</h3></a>
 	<h4> {{ post.header }} </h4>
+	<p>Created on: {{ format_datetime(post.date_created) }}</p>
 	<p> {{ post.body }} </p>
 	<p> {{ tags }} </p>
 	<h5> Likes: {{ post.number_of_likes }} </h5>
@@ -65,6 +66,7 @@ Post
 				<button class="btn btn-danger glyphicon glyphicon-remove" type="submit"></button>
 			</form>
 		{% endif %}
+		<p>Commented on {{ format_datetime(comment.date_created) }}</p>
 		<p> {{ comment.body }} </p>
 	{% endfor %}
 
