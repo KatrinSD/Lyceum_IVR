@@ -1,0 +1,13 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block styles -%}
+    {{super()}}  {# do not forget to call super or Bootstrap's own stylesheets
+                    will disappear! #}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='base.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='error.css')}}">
+{% endblock %}
+
+{% block content %}
+{% endblock %}

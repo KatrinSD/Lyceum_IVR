@@ -43,9 +43,10 @@ Post
 		  <div class="carousel-inner">
 		  	{% for image_id in post_image_ids %}
 				<div class="item{% if loop.index == 1 %} active{% endif %}">
-			  		<img src='{{ url_for("static", filename=image_id)}}' alt="Los Angeles">
+			  		<img src='{{ url_for("static", filename=image_id)}}'>
 				</div>
 			{% endfor %}
+		  </div>>
 
 		  <!-- Left and right controls -->
 		  <a class="left carousel-control" href="#myCarousel" data-slide="prev">
