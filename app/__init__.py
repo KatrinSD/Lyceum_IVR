@@ -10,6 +10,7 @@ app.config["REDIS_URL"] = "redis://localhost:6379"
 app.config["SECRET_KEY"] = "Thisissupposedtobesecret!"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////home/ekaterina/Lyceum_IVR/database.db"
 app.config["STATIC_FOLDER"] = None
+app.config["PER_PAGE"] = 3
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()

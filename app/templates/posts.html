@@ -10,6 +10,10 @@ Posts
 
 <h1> Posts:</h1>
 
+	{% if not search %}
+		{{ pagination.info }}
+		{{ pagination.links }}
+	{% endif %}
 	{% for post in posts %}
 		<a class="nav-link" href={{ url_for("profile", user_id=post.user_id) }}><h3>{{ post.username }}</h3></a>
 		<a class="nav-link" href={{ url_for("post", post_id=post.id) }}><h3>{{ post.header }}</h3></a>
@@ -20,6 +24,9 @@ Posts
 		</form>
 		<h5> {{ post.number_of_likes }} </h5>
 	{% endfor %}
+	{% if not search %}
+		{{ pagination.links }}
+	{% endif %}
 
 </div> <!-- /container -->
 {% endblock %}

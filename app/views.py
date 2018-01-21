@@ -3,6 +3,7 @@ import uuid
 
 from flask import session, redirect, url_for, request, flash
 from flask import render_template as flask_render
+from flask_paginate import Pagination, get_page_args
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, FileField
@@ -81,6 +82,8 @@ def handle_error(e):
 	code = 500
 	if isinstance(e, HTTPException) and code not in TEMPLATED_HTTP_ERRORS:
 		code = e.code
+
+	print "Exception raised: {0}".format(e)
 
 	return render_http_error(code)
 
@@ -329,9 +332,12 @@ def upload_photos(post_id):
 @login_required
 def my_posts():
 
-	posts = Post.query.filter_by(user_id=current_user.id).order_by(Post.date_created.desc())
+	posts_count = Post.query.filter_by(user_id=current_user.id).count()
+	page, per_page, offset = get_page_args("page", "per_page")
+	posts = Post.query.filter_by(user_id=current_user.id).order_by(Post.date_created.desc()).offset(offset).limit(per_page)
+	pagination = Pagination(page=page, total=posts_count, per_page=per_page, record_name="posts", css_framework="bootstrap3")
 
-	return render_template("my_posts.html", username=current_user.username, posts=posts)
+	return render_template("my_posts.html", username=current_user.username, posts=posts, pagination=pagination)
 
 @app.route("/like/<int:post_id>")
 @login_required
@@ -365,7 +371,12 @@ def post(post_id):
 		return render_404_not_found("post")
 
 	tags = ", ".join(sorted(tags_driver.get_tags(post_id)))
-	post_comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.date_created.desc())
+
+	post_comments_count = Comment.query.filter_by(post_id=post_id).count()
+	page, per_page, offset = get_page_args("page", "per_page")
+	post_comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.date_created.desc()).offset(offset).limit(per_page)
+	pagination = Pagination(page=page, total=post_comments_count, per_page=per_page, record_name="comments", css_framework="bootstrap3")
+
 	post_image_ids = img_index_driver.get_image_ids(post_id)
 
 	if form.validate_on_submit():
@@ -384,33 +395,27 @@ def post(post_id):
 		post_comments=post_comments, form=form,
 		username=current_user.username,
 		post_image_ids=post_image_ids,
+		pagination=pagination,
 	)
 
-
-@app.route("/findposts", methods=["GET", "POST"])
-def findposts():
-
-	form = FindPostForm()
-	posts = []
-
-	if form.validate_on_submit():
-		tag = form.tag.data
-		post_ids = tags_driver.get_posts(tag)
-		posts = Post.query.filter(Post.id.in_(post_ids))
-
-	return render_template("findposts.html", form=form, posts=posts)
 
 @app.route("/posts", methods=["GET", "POST"])
 def posts():
 
 	tag = request.form.get("tag")
-	if tag is None:
-		posts = Post.query.order_by(Post.date_created.desc())
-	else:
+	print "TAG: [{0}]".format(tag)
+	page, per_page, offset = get_page_args("page", "per_page")
+	pagination = None
+	
+	if tag:
 		post_ids = tags_driver.get_posts(tag)
 		posts = Post.query.filter(Post.id.in_(post_ids)).order_by(Post.date_created.desc())
+	else:
+		posts_count = Post.query.count()
+		posts = Post.query.order_by(Post.date_created.desc()).offset(offset).limit(per_page)
+		pagination = Pagination(page=page, total=posts_count, per_page=per_page, record_name="posts", css_framework="bootstrap3")
 
-	return render_template("posts.html", posts=posts)
+	return render_template("posts.html", posts=posts, search=bool(tag), pagination=pagination)
 
 
 @app.route("/delete_comment/<int:comment_id>", methods=["POST"])

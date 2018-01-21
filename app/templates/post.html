@@ -59,6 +59,8 @@ Post
 		  </a>
 		</div>
 	{% endif %}
+	{{ pagination.info }}
+	{{ pagination.links }}
 	{% for comment in post_comments %}
 		<a class="nav-link" href={{ url_for("profile", user_id=comment.user_id) }}><h3>{{ comment.username }}</h3></a>
 
@@ -70,7 +72,7 @@ Post
 		<p>Commented on {{ format_datetime(comment.date_created) }}</p>
 		<p> {{ comment.body }} </p>
 	{% endfor %}
-
+	{{ pagination.links }}
 
 
 </div> <!-- /container -->
