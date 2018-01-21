@@ -15,16 +15,32 @@ Posts
 		{{ pagination.links }}
 	{% endif %}
 	{% for post in posts %}
-		<a class="nav-link" href={{ url_for("profile", user_id=post.user_id) }}><h3>{{ post.username }}</h3></a>
-		<a class="nav-link" href={{ url_for("post", post_id=post.id) }}><h3>{{ post.header }}</h3></a>
-		<p>Created on: {{ format_datetime(post.date_created) }}</p>
-		<p> {{ post.body }} </p>
-		<form action = "{{url_for('like', post_id=post.id)}}">
-			<button class="btn btn-lg btn-primary btn-block" type="submit">Like</button>
-		</form>
-		<h5> {{ post.number_of_likes }} </h5>
+		<div class="well">
+			<div class="media">
+				<div class="media-body">
+					<a class="nav-link" href={{ url_for("post", post_id=post.id) }}>
+						<h4 class="media-heading">
+							{{ post.header }}
+						</h4>
+					</a>
+					<a class="nav-link" href={{ url_for("profile", user_id=post.user_id) }}>
+						<p class="text-right">Posted by {{ post.username }}</p>
+					</a>
+					<p>{{ post.body }}</p>
+				 	<ul class="list-inline list-unstyled">
+						<li><span><i class="glyphicon glyphicon-calendar"></i> Posted on {{ format_datetime(post.date_created) }} </span></li>
+						<li>|</li>
+						<span><i class="glyphicon glyphicon-comment"></i> {{ post.number_of_comments }} comments</span>
+						<li>|</li>
+						<span><i class="glyphicon glyphicon-heart"></i> {{ post.number_of_likes }} likes</span>
+						<li>|</li>
+					</ul>
+			   </div>
+			</div>
+		  </div>
 	{% endfor %}
 	{% if not search %}
+		{{ pagination.info }}
 		{{ pagination.links }}
 	{% endif %}
 
