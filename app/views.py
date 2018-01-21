@@ -6,7 +6,7 @@ from flask import render_template as flask_render
 from flask_paginate import Pagination, get_page_args
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, BooleanField, FileField
+from wtforms import StringField, PasswordField, BooleanField, FileField, TextAreaField
 from wtforms.validators import InputRequired, Email, Length
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -135,7 +135,7 @@ class RegisterForm(FlaskForm):
 
 class PostForm(FlaskForm):
 	header = StringField("header", validators=[InputRequired(), Length(min=1, max=30)])
-	body = StringField("post", validators=[InputRequired(), Length(min=1, max=1000)])
+	body = TextAreaField("body", validators=[InputRequired(), Length(min=1, max=1000)])
 	tags = StringField("tags", validators=[Length(max=100)])
 
 #class UploadPhotosForm(FlaskForm):
@@ -155,7 +155,7 @@ class ChangePasswordForm(FlaskForm):
 	confirm_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
 
 class CommentForm(FlaskForm):
-	body = StringField("post", validators=[InputRequired(), Length(min=1, max=1000)])
+	body = TextAreaField("body", validators=[InputRequired(), Length(min=1, max=1000)])
 
 
 
@@ -382,7 +382,7 @@ def post(post_id):
 	if form.validate_on_submit():
 		comment = Comment(
 			username=current_user.username, user_id=current_user.id,
-			post_id=post_id, body = form.body.data
+			post_id=post_id, body = form.body.data, date_created=datetime.datetime.utcnow()
 		)
 
 		post.number_of_comments += 1
