@@ -278,6 +278,7 @@ def writepost():
 			username=current_user.username,
 			user_id=current_user.id,
 			is_draft=True,
+			date_created=datetime.datetime.utcnow(),
 		)
 		db.session.add(post)
 		db.session.commit()
