@@ -124,38 +124,38 @@ class Comment(db.Model):
 	date_created = db.Column(db.DateTime, index=True, default=datetime.datetime.utcnow())
 
 class LoginForm(FlaskForm):
-	username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])
-	password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
+	username = StringField("Username", validators=[InputRequired(), Length(min=4, max=15)])
+	password = PasswordField("Password", validators=[InputRequired(), Length(min=8, max=80)])
 	remember = BooleanField("remember me")
 
 class RegisterForm(FlaskForm):
-	email = StringField("email", validators=[InputRequired(), Email(message="Invalid email"), Length(max=50)])
-	username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])
-	password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
+	email = StringField("Email", validators=[InputRequired(), Email(message="Invalid email"), Length(max=50)])
+	username = StringField("Username", validators=[InputRequired(), Length(min=4, max=15)])
+	password = PasswordField("Password", validators=[InputRequired(), Length(min=8, max=80)])
 
 class PostForm(FlaskForm):
-	header = StringField("header", validators=[InputRequired(), Length(min=1, max=30)])
-	body = TextAreaField("body", validators=[InputRequired(), Length(min=1, max=1000)])
-	tags = StringField("tags", validators=[Length(max=100)])
+	header = StringField("Header", validators=[InputRequired(), Length(min=1, max=30)])
+	body = TextAreaField("Body", validators=[InputRequired(), Length(min=1, max=1000)])
+	tags = StringField("Tags (space-separated)", validators=[Length(max=100)])
 
 #class UploadPhotosForm(FlaskForm):
 	#photos = FileField("photos", validators=[(FileAllowed(photos, "Images only"))])
 #	photos = FileField("photos")
 
 class FindPostForm(FlaskForm):
-	tag = StringField("tag", validators=[Length(max=100)])
+	tag = StringField("Tag", validators=[Length(max=100)])
 
 """class ChangeUsername(FlaskForm):
 	new_username = StringField("username", validators=[InputRequired(), Length(min=4, max=15)])"""
 
 class ChangePasswordForm(FlaskForm):
 
-	old_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
-	new_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
-	confirm_password = PasswordField("password", validators=[InputRequired(), Length(min=8, max=80)])
+	old_password = PasswordField("Old password", validators=[InputRequired(), Length(min=8, max=80)])
+	new_password = PasswordField("New password", validators=[InputRequired(), Length(min=8, max=80)])
+	confirm_password = PasswordField("Confirm new password", validators=[InputRequired(), Length(min=8, max=80)])
 
 class CommentForm(FlaskForm):
-	body = TextAreaField("body", validators=[InputRequired(), Length(min=1, max=1000)])
+	body = TextAreaField("Comment", validators=[InputRequired(), Length(min=1, max=1000)])
 
 
 
