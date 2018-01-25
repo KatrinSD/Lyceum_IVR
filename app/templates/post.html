@@ -20,8 +20,9 @@ Post
 				<h2 class="media-heading">
 					{{ post.header }}
 				</h2>
-				<h3>{{ post.body }}</h3>
-		
+				<div class="well">
+					<h3>{{ post.body }}</h3>
+				</div>
 				{% if post_image_ids %}
 					<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
 						<!-- Indicators -->
@@ -51,6 +52,7 @@ Post
 						</a>
 					</div>
 				{% endif %}
+				Tags: {{tags}}
 				<ul class="list-inline list-unstyled">
 					<li><span><a class="nav-link" href={{ url_for("profile", user_id=post.user_id) }}>
 						<p class="text-right">{{ post.username }}</p>
