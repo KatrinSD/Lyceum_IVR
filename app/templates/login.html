@@ -15,12 +15,19 @@ Login
     <div class="container">
 
       <form class="form-signin" method = "POST" action = "/login">
-        <h2 class="form-signin-heading">Please sign in</h2>
+        <h2 class="form-signin-heading">Please log in</h2>
         {{ form.hidden_tag() }}
         {{ wtf.form_field(form.username) }}
         {{ wtf.form_field(form.password) }}
         {{ wtf.form_field(form.remember) }}
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <div class="row">
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Log in</button>
+        </div>
+      </form>
+      <form action="/posts">
+        <div class="row">
+            <button type="submit" class="btn btn-lg btn-danger btn-block">Cancel</button>
+        </div>
       </form>
   <a href={{url_for("signup")}}>Go to sign up</a>
 

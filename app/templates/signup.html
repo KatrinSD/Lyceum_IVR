@@ -19,9 +19,16 @@ Sign Up
     {{ wtf.form_field(form.username) }}
     {{ wtf.form_field(form.email) }}
     {{ wtf.form_field(form.password) }}
-    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign Up</button>
+    <div class="row">
+		<button class="btn btn-lg btn-primary btn-block" type="submit">Sign Up</button>
+	</div>
   </form>
-  <a href={{url_for("login")}}>Go to sign in</a>
+  <form action="/posts">
+	<div class="row">
+		<button type="submit" class="btn btn-lg btn-danger btn-block">Cancel</button>
+	</div>
+  </form>
+  <a href={{url_for("login")}}>Go to log in</a>
 
 </div> <!-- /container -->
 {% endblock %}
