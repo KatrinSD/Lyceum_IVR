@@ -402,7 +402,6 @@ def post(post_id):
 def posts():
 
 	tag = request.form.get("tag")
-	print "TAG: [{0}]".format(tag)
 	page, per_page, offset = get_page_args("page", "per_page")
 	pagination = None
 	
