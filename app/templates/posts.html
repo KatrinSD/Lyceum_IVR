@@ -35,6 +35,9 @@ Posts
 						<span><i class="glyphicon glyphicon-heart"></i> {{ post.number_of_likes }} likes</span>
 						<li>|</li>
 					</ul>
+					<form action = "{{url_for('like', post_id=post.id)}}">
+						<button class="btn btn-lg btn-primary btn-block" type="submit">Like</button>
+					</form>
 			   </div>
 			</div>
 		  </div>
