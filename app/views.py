@@ -340,9 +340,9 @@ def my_posts():
 
 	return render_template("my_posts.html", username=current_user.username, posts=posts, pagination=pagination)
 
-@app.route("/like/<int:post_id>")
+@app.route("/like/<int:post_id>/<int:is_post_page>")
 @login_required
-def like(post_id):
+def like(post_id, is_post_page):
 
 	like_change = 1
 
@@ -359,7 +359,10 @@ def like(post_id):
 
 	db.session.commit()
 
-	return redirect(url_for("posts"))
+	if is_post_page:
+		return redirect(url_for("post", post_id=post_id))
+	else:
+		return redirect(url_for("posts"))
 
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 @login_required
