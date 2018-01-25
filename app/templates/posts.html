@@ -23,7 +23,7 @@ Posts
 							{{ post.header }}
 						</h4>
 					</a>
-					<a class="nav-link" href={{ url_for("profile", user_id=post.user_id) }}>
+					<a class="nav-link" href={{ url_for("userposts", user_id=post.user_id) }}>
 						<p class="text-right">Posted by {{ post.username }}</p>
 					</a>
 					<p>{{ post.body }}</p>

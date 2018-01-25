@@ -160,21 +160,15 @@ class CommentForm(FlaskForm):
 
 
 @app.route("/")
-@app.route("/index")
 def index():
 
-	return render_template("index.html")
+	return redirect(url_for("posts"))
 
 @app.route("/logout")
 @login_required
 def logout():
 	logout_user()
 	return redirect(url_for("posts"))
-
-@app.route("/home")
-@login_required
-def home():
-	return "The current user is" + current_user.username
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -187,7 +181,6 @@ def login():
 				login_user(user, remember=form.remember.data)
 				return redirect(url_for("posts"))
 		return "<h1>Invalid username or password</h1>"
-		#return "<h1>" + form.username.data + " " + form.password.data + "</h1>"
 
 	return render_template("login.html", form = form)
 
@@ -203,11 +196,6 @@ def signup():
 
 		return redirect(url_for("login"))
 	return render_template("signup.html", form = form)
-
-@app.route("/dashboard")
-@login_required
-def dashboard():
-	return render_template("dashboard.html")
 
 @app.route("/profile", methods=["GET", "POST"])
 @app.route("/profile/<int:user_id>", methods=["GET", "POST"])
@@ -329,16 +317,23 @@ def upload_photos(post_id):
 	return render_template("uploadphotos.html", post_id=post_id)
 
 
+@app.route("/userposts/<int:user_id>")
+def userposts(user_id):
+
+	posts_count = Post.query.filter_by(user_id=user_id).count()
+	page, per_page, offset = get_page_args("page", "per_page")
+	posts = Post.query.filter_by(user_id=user_id).order_by(Post.date_created.desc()).offset(offset).limit(per_page)
+	pagination = Pagination(page=page, total=posts_count, per_page=per_page, record_name="posts", css_framework="bootstrap3")
+
+	return render_template("posts.html", posts=posts, pagination=pagination)
+
+
 @app.route("/myposts")
 @login_required
 def my_posts():
 
-	posts_count = Post.query.filter_by(user_id=current_user.id).count()
-	page, per_page, offset = get_page_args("page", "per_page")
-	posts = Post.query.filter_by(user_id=current_user.id).order_by(Post.date_created.desc()).offset(offset).limit(per_page)
-	pagination = Pagination(page=page, total=posts_count, per_page=per_page, record_name="posts", css_framework="bootstrap3")
+	return redirect(url_for("userposts", user_id=current_user.id))
 
-	return render_template("my_posts.html", username=current_user.username, posts=posts, pagination=pagination)
 
 @app.route("/like/<int:post_id>/<int:is_post_page>")
 @login_required
@@ -432,7 +427,10 @@ def delete_comment(comment_id):
 		return render_404_not_found("comment")
 
 	if comment.user_id == current_user.id:
+		post = Post.query.filter_by(id=comment.post_id).first()
 		Comment.query.filter_by(id=comment_id).delete()
+		post.number_of_comments -= 1
+		db.session.add(post)
 		db.session.commit()
 	else:
 		return render_403_forbidden()

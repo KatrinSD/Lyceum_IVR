@@ -6,7 +6,6 @@ Post
 
 {% block styles %}
 {{super()}}
-<link rel="stylesheet" href="{{url_for('.static', filename='signin.css')}}">
 {% endblock %}
 
 {% block content %}
@@ -54,7 +53,7 @@ Post
 				{% endif %}
 				Tags: {{tags}}
 				<ul class="list-inline list-unstyled">
-					<li><span><a class="nav-link" href={{ url_for("profile", user_id=post.user_id) }}>
+					<li><span><a class="nav-link" href={{ url_for("userposts", user_id=post.user_id) }}>
 						<p class="text-right">{{ post.username }}</p>
 					</a></span></li>
 					<li>|</li>
@@ -82,7 +81,7 @@ Post
 					<div class="well">
 						<h4> {{ comment.body }} </h4>
 						<ul class="list-inline list-unstyled">
-							<li><a class="nav-link" href={{ url_for("profile", user_id=comment.user_id) }}>{{ comment.username }}</a></li>
+							<li><a class="nav-link" href={{ url_for("userposts", user_id=comment.user_id) }}>{{ comment.username }}</a></li>
 							<li>|</li>
 							<li><p>Commented on {{ format_datetime(comment.date_created) }}</p></li>
 						</ul>
