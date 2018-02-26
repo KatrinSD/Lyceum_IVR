@@ -401,7 +401,7 @@ def post(post_id):
 @app.route("/posts", methods=["GET", "POST"])
 def posts():
 
-	tag = request.form.get("tag")
+	tag = request.args.get("tag")
 	page, per_page, offset = get_page_args("page", "per_page")
 	pagination = None
 	
