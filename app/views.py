@@ -100,8 +100,8 @@ def load_user(user_id):
 
 class Post(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
-	header = db.Column(db.String(30))
-	body = db.Column(db.String(100))
+	header = db.Column(db.String(50))
+	body = db.Column(db.String(100000))
 	username = db.Column(db.String(30))
 	user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 	number_of_likes = db.Column(db.Integer, default=0)
@@ -134,8 +134,8 @@ class RegisterForm(FlaskForm):
 	password = PasswordField("Password", validators=[InputRequired(), Length(min=8, max=80)])
 
 class PostForm(FlaskForm):
-	header = StringField("Header", validators=[InputRequired(), Length(min=1, max=30)])
-	body = TextAreaField("Body", validators=[InputRequired(), Length(min=1, max=1000)])
+	header = StringField("Header", validators=[InputRequired(), Length(min=1, max=50)])
+	body = TextAreaField("Body", validators=[InputRequired(), Length(min=1, max=100000)])
 	tags = StringField("Tags (space-separated)", validators=[Length(max=100)])
 
 #class UploadPhotosForm(FlaskForm):
